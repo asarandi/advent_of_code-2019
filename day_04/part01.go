@@ -5,13 +5,9 @@ import "fmt"
 
 func is_valid(x int) bool {
     res := false
-    prev := -1
+    prev := 10
     for ; x > 0; x/=10 {
         z := x % 10
-        if prev == -1 {
-            prev = z
-            continue
-        }
         if prev < z {
             return false
         }

@@ -5,12 +5,12 @@ import (
     "fmt"
     "io/ioutil"
     "log"
+    "math"
     "strconv"
     "strings"
-	"math"
 )
 
-func get_params(array []int, index int) (int, int, int, int) {
+func getParams(array []int, index int) (int, int, int, int) {
     var size, i, j, k int
     instructionLengths := map[int]int{
         1: 4, 2: 4, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4, 99: 1}
@@ -36,122 +36,142 @@ func get_params(array []int, index int) (int, int, int, int) {
     return size, i, j, k
 }
 
-var first bool
-var flags []bool
-var phases []int
-var outputs [5]chan int
-var finished [5]chan bool
+var programs [][]int
+var programs_copy [][]int
+var inputs [][]int
+var pcs []int
 
-func exec(array []int, idx int) {
-    done := false
-    for index := 0; !done; {
-        size, i, j, k := get_params(array, index)
-        switch array[index] % 100 {
+//returns -1 when program halts or next pc position
+func execute(amp int) int {
+    program := programs[amp]
+    pc := pcs[amp]
+    for ; pc != -1; {
+        size, i, j, k := getParams(program, pc)
+        switch program[pc] % 100 {
         case 1:
-            array[k] = array[i] + array[j]
+            program[k] = program[i] + program[j]
         case 2:
-            array[k] = array[i] * array[j]
+            program[k] = program[i] * program[j]
         case 3:
-			if !flags[idx] {
-	            array[i] = phases[idx]
-				flags[idx] = true
-			} else {
-				if idx == 0 && !first {
-					array[i] = 0
-					first = true
-				} else {
-					array[i] = <-outputs[(idx + 4) % 5]
-				}
-			}
+            program[i] = inputs[amp][0]
+            inputs[amp] = inputs[amp][1:] //dequeue first
         case 4:
-            outputs[idx] <- array[i]
+            inputs[(amp+1)%5] = append(inputs[(amp+1)%5], program[i]) //enqueue last
+            return pc + size
         case 5:
-            if array[i] != 0 { index = array[j] - size }
+            if program[i] != 0 {
+                pc = program[j] - size
+            }
         case 6:
-            if array[i] == 0 { index = array[j] - size }
+            if program[i] == 0 {
+                pc = program[j] - size
+            }
         case 7:
-            if array[i] < array[j] { array[k] = 1 } else { array[k] = 0 }
+            if program[i] < program[j] {
+                program[k] = 1
+            } else {
+                program[k] = 0
+            }
         case 8:
-            if array[i] == array[j] { array[k] = 1 } else { array[k] = 0 }
+            if program[i] == program[j] {
+                program[k] = 1
+            } else {
+                program[k] = 0
+            }
         case 99:
-            done = true
+            return -1
         default:
             log.Fatal("error")
         }
-        index += size
+        pc += size
     }
-	finished[idx] <- true
+    return -1
 }
 
-func get_phases(x int) bool {
-	for i:=4; i>=0; i-- {
-		k := x % 10
-		if k < 5 {				/* XXX */
-			return false
-		}
-		phases[i] = k
-		x /= 10
-	}
-	for i:=0; i<4; i++ {
-		for j:=i+1; j<5; j++ {
-			if phases[i] == phases[j] {
-				return false
-			}
-		}
-	}
-	return true
+func getPhases(x int) ([]int, bool) {
+    phases := make([]int, 5)
+    for i := 4; i >= 0; i-- {
+        k := x % 10
+        if k < 5 { /* XXX */
+            return nil, false
+        }
+        phases[i] = k
+        x /= 10
+    }
+    for i := 0; i < 4; i++ {
+        for j := i + 1; j < 5; j++ {
+            if phases[i] == phases[j] {
+                return nil, false
+            }
+        }
+    }
+    return phases, true
 }
 
-func main() {
+func is_finished() bool {
+    res := true
+    for i := 0; i < 5; i++ {
+        res = res && pcs[i] == -1
+    }
+    return res
+}
+
+func prepare() {
     content, err := ioutil.ReadFile("input.txt")
     if err != nil {
         log.Fatal(err)
     }
     s := strings.Trim(string(content), " \t\n\r\v\f");
     split := strings.Split(s, ",")
-	programs := make([][]int, 5)
-	programs_copy := make([][]int, 5)
 
-	for k:=0;k<5;k++ {
-		programs[k] = make([]int, len(split))
-		programs_copy[k] = make([]int, len(split))
-		for idx, v := range split {
-			i, err := strconv.Atoi(v)
-			if err != nil {
-				log.Fatal(err)
-			}
-			programs[k][idx] = i
-			programs_copy[k][idx] = i
-		}
-	}
+    programs = make([][]int, 5)
+    programs_copy = make([][]int, 5)
+    inputs = make([][]int, 5)
+    pcs = make([]int, 5)
 
-	res := math.MinInt32
-	flags = make([]bool, 5)
-	phases = make([]int, 5)
-	for i := range outputs {
-		outputs[i] = make(chan int)
-		finished[i] = make(chan bool)
-	}
+    for k := 0; k < 5; k++ {
+        programs[k] = make([]int, len(split))
+        programs_copy[k] = make([]int, len(split))
+        for idx, v := range split {
+            i, err := strconv.Atoi(v)
+            if err != nil {
+                log.Fatal(err)
+            }
+            programs[k][idx] = i
+            programs_copy[k][idx] = i
+        }
+    }
+}
 
-	for j:=55555; j<99999; j++ {
-		if !get_phases(j) {
-			continue
-		}
-		first = false
-		for i:=0;i<5;i++ {
-			flags[i] = false
-			copy(programs[i], programs_copy[i])
-			go exec(programs[i], i)
-		}
-		for i:=0;i<4;i++ {
-			<-finished[i]
-		}
+func main() {
 
-		candidate := <-outputs[4]
-		<-finished[4]
-		if candidate > res {
-			res = candidate
-		}
-	}
-	fmt.Println(res)
+    prepare()
+
+    res := math.MinInt32
+
+    for j := 55555; j < 99999; j++ {
+        phases, valid := getPhases(j)
+        if !valid {
+            continue
+        }
+
+        for i := 0; i < 5; i++ {
+            copy(programs[i], programs_copy[i])
+            inputs[i] = make([]int, 0)
+            inputs[i] = append(inputs[i], phases[i])
+            pcs[i] = 0
+        }
+
+        inputs[0] = append(inputs[0], 0) //additional input for first amp only
+
+        for i := 0; !is_finished(); {
+            pcs[i] = execute(i)
+            i = (i + 1) % 5
+        }
+        if inputs[0][0] > res {
+            res = inputs[0][0]
+        }
+    }
+
+    fmt.Println(res)
 }

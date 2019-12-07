@@ -1,4 +1,4 @@
-/* advent of code 2019: day 05, part 02 */
+/* advent of code 2019: day 07, part 01 */
 package main
 
 import (
@@ -7,6 +7,7 @@ import (
     "log"
     "strconv"
     "strings"
+	"math"
 )
 
 func get_params(array []int, index int) (int, int, int, int) {
@@ -35,8 +36,10 @@ func get_params(array []int, index int) (int, int, int, int) {
     return size, i, j, k
 }
 
-func exec(array []int, input int) {
+func exec(array []int, phase, input int) int {
     done := false
+	flag := false
+	res := -1
     for index := 0; !done; {
         size, i, j, k := get_params(array, index)
         switch array[index] % 100 {
@@ -45,9 +48,14 @@ func exec(array []int, input int) {
         case 2:
             array[k] = array[i] * array[j]
         case 3:
-            array[i] = input
+			if !flag {
+	            array[i] = phase
+				flag = true
+			} else {
+				array[i] = input
+			}
         case 4:
-            fmt.Println("output", array[i])
+            res = array[i]
         case 5:
             if array[i] != 0 {
                 index = array[j] - size
@@ -75,6 +83,27 @@ func exec(array []int, input int) {
         }
         index += size
     }
+	return res
+}
+
+func get_phases(x int) ([]int, bool) {
+	phases := make([]int, 5)
+	for i:=4; i>=0; i-- {
+		k := x % 10
+		if k > 4 {				/* XXX */
+			return nil, false
+		}
+		phases[i] = k
+		x /= 10
+	}
+	for i:=0; i<4; i++ {
+		for j:=i+1; j<5; j++ {
+			if phases[i] == phases[j] {
+				return nil, false
+			}
+		}
+	}
+	return phases, true
 }
 
 func main() {
@@ -95,6 +124,23 @@ func main() {
     array_copy := make([]int, len(array))
     copy(array_copy, array)
 
-    exec(array, 1)
-    exec(array_copy, 5)
+	res := math.MinInt32
+
+	for j:=0; j < 44444; j++ {
+		phases, valid := get_phases(j)
+		if !valid {
+			continue
+		}
+
+		input := 0
+		for i:=0; i<5; i++ {
+			copy(array, array_copy)
+			input = exec(array, phases[i], input)
+		}
+
+		if input > res {
+			res = input
+		}
+	}
+	fmt.Println(res)
 }

@@ -108,7 +108,7 @@ func getPhases(x int) ([]int, bool) {
     return phases, true
 }
 
-func is_finished() bool {
+func isFinished() bool {
     res := true
     for i := 0; i < 5; i++ {
         res = res && pcs[i] == -1
@@ -164,7 +164,7 @@ func main() {
 
         inputs[0] = append(inputs[0], 0) //additional input for first amp only
 
-        for i := 0; !is_finished(); {
+        for i := 0; !isFinished(); {
             pcs[i] = execute(i)
             i = (i + 1) % 5
         }

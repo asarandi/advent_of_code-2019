@@ -1,4 +1,4 @@
-/* advent of code 2019: day 10, part 01 */
+/* advent of code 2019: day 10, part 02 */
 package main
 
 import (
@@ -54,10 +54,10 @@ func (a ByAngle)    Less(i, j int) bool {
 	return a[i].a < a[j].a
 }
 
-var base = asteroid{13,11,0,0}
+var base = asteroid{22,17,0,0}
 
 func main() {
-	content, err := ioutil.ReadFile("sample_04.txt")
+	content, err := ioutil.ReadFile("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,6 +66,9 @@ func main() {
 	asteroids = make([]asteroid,0)
 	for x, _ := range split {
 		for y, val := range split[x] {
+            if x == base.x && y == base.y {
+                continue
+            }
 			if val == '#' {
 				ast := asteroid{x,y,0,0}
 				ast.d = base.distance(ast)
@@ -74,13 +77,38 @@ func main() {
 			}
 		}
 	}
+
+    count:=0
 	sort.Sort(ByDistance(asteroids))
 	sort.Sort(ByAngle(asteroids))
 
-	for _, ast := range asteroids {
-		if ast.a < math.Pi/2 {
+    angles := make(map[float64]bool)
+
+	for i:=0; i<len(asteroids); i++ {
+		if asteroids[i].a < math.Pi/2 || angles[asteroids[i].a] {
 			continue
 		}
-		fmt.Println(ast)
-	}
+        angles[asteroids[i].a] = true
+        asteroids = append(asteroids[:i], asteroids[i+1:]...)
+        i--
+        count += 1
+    }
+//    fmt.Println(count)
+
+	for i:=0; i<len(asteroids); i++ {
+		if asteroids[i].a >= math.Pi/2 || angles[asteroids[i].a] {
+			continue
+		}
+        angles[asteroids[i].a] = true
+        if count + 1 == 200 {
+            fmt.Println("result", asteroids[i].y*100+asteroids[i].x)
+            break
+        }
+        asteroids = append(asteroids[:i], asteroids[i+1:]...)
+        i--
+        count += 1
+    }
+
+//    fmt.Println(count)
+
 }

@@ -24,7 +24,7 @@ func abs(a int) int {
 }
 
 func main() {
-	content, err := ioutil.ReadFile("sample_04.txt")
+	content, err := ioutil.ReadFile("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -59,15 +59,27 @@ func exec(array []int64, in, out chan int64) {
         case 3:
             array[i] = <-in
         case 4:
-			out <- array[i]
+            out <- array[i]
         case 5:
-            if array[i] != 0 { index = array[j] - size }
+            if array[i] != 0 {
+                index = array[j] - size
+            }
         case 6:
-            if array[i] == 0 { index = array[j] - size }
+            if array[i] == 0 {
+                index = array[j] - size
+            }
         case 7:
-            if array[i] < array[j] { array[k] = 1 } else { array[k] = 0 }
+            if array[i] < array[j] {
+                array[k] = 1
+            } else {
+                array[k] = 0
+            }
         case 8:
-            if array[i] == array[j] { array[k] = 1 } else { array[k] = 0 }
+            if array[i] == array[j] {
+                array[k] = 1
+            } else {
+                array[k] = 0
+            }
         case 9:
             base += array[i]
         case 99:
@@ -80,7 +92,7 @@ func exec(array []int64, in, out chan int64) {
 }
 
 type point struct {
-	y, x int
+    y, x int
 }
 
 func main() {
@@ -90,7 +102,7 @@ func main() {
     }
     s := strings.Trim(string(content), " \t\n\r\v\f");
     split := strings.Split(s, ",")
-	array := make([]int64, len(split)*16)
+    array := make([]int64, len(split)*16)
     for idx, v := range split {
         i, err := strconv.ParseInt(strings.Trim(v, " "), 10, 64)
         if err != nil {
@@ -99,45 +111,46 @@ func main() {
         array[idx] = i
     }
 
-	rows, columns := 6, 40
-	result := make([][]byte, rows)
-	for i:=0; i<rows; i++ {
-		result[i] = make([]byte, columns)
-		for j:=0; j<columns; j++ {
-			result[i][j] = '.'
-		}
-	}
-	i, j, direction := 0, 0, 0
-	moves := []point{{-1,0}, {0,1}, {1,0}, {0,-1}}	//URDL
-	turns := []int{3, 1}
-	visited := make(map[point]int64)
-	finished = false
+    rows, columns := 6, 40
+    result := make([][]byte, rows)
+    for i := 0; i < rows; i++ {
+        result[i] = make([]byte, columns)
+        for j := 0; j < columns; j++ {
+            result[i][j] = '.'
+        }
+    }
+    i, j, direction := 0, 0, 0
+    moves := []point{{-1, 0}, {0, 1}, {1, 0}, {0, -1}} //URDL
+    turns := []int{3, 1}
+    visited := make(map[point]int64)
+    finished = false
 
-	in := make(chan int64)
-	out := make(chan int64)
-	go exec(array, in, out)
-	in <- 1
-	for ; !finished ; {
-		select {
-			case color := <-out:
-				turn := <-out
-				visited[point{i,j}] = color
-				if color == 1 {
-					result[i][j] = '#'
-				}
-				direction = (direction + turns[turn]) & 3
-				i += moves[direction].y
-				j += moves[direction].x
-				if !finished {
-					in <- visited[point{i,j}]
-				}
-			default: break
-		}
-	}
-	close(in)
-	close(out)
+    in := make(chan int64)
+    out := make(chan int64)
+    go exec(array, in, out)
+    in <- 1
+    for ; !finished; {
+        select {
+        case color := <-out:
+            turn := <-out
+            visited[point{i, j}] = color
+            if color == 1 {
+                result[i][j] = '#'
+            }
+            direction = (direction + turns[turn]) & 3
+            i += moves[direction].y
+            j += moves[direction].x
+            if !finished {
+                in <- visited[point{i, j}]
+            }
+        default:
+            break
+        }
+    }
+    close(in)
+    close(out)
 
-	for i=0; i<rows; i++ {
-		fmt.Println(string(result[i]))
-	}
+    for i = 0; i < rows; i++ {
+        fmt.Println(string(result[i]))
+    }
 }

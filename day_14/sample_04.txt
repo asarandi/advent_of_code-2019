@@ -1,0 +1,12 @@
+139 ORE => 4 apple
+144 ORE => 7 banana
+145 ORE => 6 cherry
+176 ORE => 6 peach
+1 apple => 8 grape
+1 peach, 6 cherry => 4 apricot
+17 apple, 3 banana => 8 plum
+2 plum, 7 lemon, 2 grape, 11 cherry => 1 orange
+22 peach, 37 cherry => 5 lemon
+5 cherry, 7 apricot, 2 lemon, 2 plum, 19 grape => 3 blueberry
+5 peach, 7 cherry, 9 plum, 37 grape => 6 raspberry
+53 orange, 6 cherry, 46 peach, 81 blueberry, 68 grape, 25 raspberry => 1 FUEL

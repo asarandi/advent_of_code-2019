@@ -10,6 +10,13 @@ import (
     "strings"
 )
 
+const (
+    running int64 = iota
+    finished
+    wantInput
+    haveOutput
+)
+
 func getParams(array []int64, index, base int64) (int64, int64, int64, int64) {
     var size, i, j, k int64
     instructionLengths := map[int64]int64{
@@ -46,11 +53,9 @@ func getParams(array []int64, index, base int64) (int64, int64, int64, int64) {
     return size, i, j, k
 }
 
-var isFinished = false
-
-func exec(array []int64, index int64) (bool, int64, int64) {
-    var size, i, j, k, base int64
-    for ; !isFinished; {
+func exec(array []int64, index int64) (int64, int64, int64) {
+    var state, size, i, j, k, base int64
+    for ; state == running; {
         size, i, j, k = getParams(array, index, base)
         switch array[index] % 100 {
         case 1:
@@ -58,9 +63,9 @@ func exec(array []int64, index int64) (bool, int64, int64) {
         case 2:
             array[k] = array[i] * array[j]
         case 3:
-            return true, i, index + size
+            state = wantInput
         case 4:
-            return false, i, index + size
+            state = haveOutput
         case 5:
             if array[i] != 0 {
                 index = array[j] - size
@@ -84,13 +89,13 @@ func exec(array []int64, index int64) (bool, int64, int64) {
         case 9:
             base += array[i]
         case 99:
-            isFinished = true
+            state = finished
         default:
             log.Fatal("error")
         }
         index += size
     }
-    return false, -1, -1
+    return state, i, index
 }
 
 type point struct {
@@ -105,20 +110,20 @@ var area map[point]int64
 var directions = [4]point{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 var stack *list.List
 
-func nextStep(currentPos point) (bool, int64) {
-    for k := 0; k < 4; k++ {
+func nextStep(currentPos point) (bool, bool, int64) {
+    var k int64
+    for k = 0; k < 4; k++ {
         candidatePos := currentPos.add(directions[k])
         if _, ok := area[candidatePos]; ok {
             continue
         }
-        return false, int64(k)
+        return false, false, k
     }
     if stack.Len() == 0 {
-        isFinished = true
-        return false, 0
+        return true, false, -1
     }
-    k := stack.Remove(stack.Front())
-    return true, k.(int64) ^ 1
+    k = stack.Remove(stack.Front()).(int64)
+    return false, true, k ^ 1
 }
 
 func main() {
@@ -139,17 +144,23 @@ func main() {
 
     currentPos, oxygenPos := point{0, 0}, point{0, 0}
     candidatePos := currentPos.add(directions[0])
-    wantInput, backtracking := false, false
+    traversed, backtracking := false, false
     area = make(map[point]int64)
     stack = list.New()
-    var index, counter, dir, numSteps int64
-    for ; !isFinished; {
-        wantInput, index, counter = exec(array, counter)
-        if wantInput {
-            backtracking, dir = nextStep(currentPos)
+    var state, index, counter, dir, numSteps int64
+    for ; state != finished; {
+        state, index, counter = exec(array, counter)
+        if state == wantInput {
+            traversed, backtracking, dir = nextStep(currentPos)
+            if traversed {
+                state = finished
+                break
+            }
             array[index] = dir + 1
             candidatePos = currentPos.add(directions[dir])
-        } else {
+        }
+        if state == haveOutput {
+            area[candidatePos] = array[index]
             if array[index] == 1 || array[index] == 2 {
                 currentPos = candidatePos
                 if !backtracking {
@@ -160,7 +171,6 @@ func main() {
                     numSteps = int64(stack.Len())
                 }
             }
-            area[candidatePos] = array[index]
         }
     }
     fmt.Println("part 1:", numSteps)
@@ -168,7 +178,7 @@ func main() {
     oxygen := make(map[point]int)
     queue := list.New()
     oxygen[oxygenPos] = 0
-    queue.PushFront(oxygenPos)
+    queue.PushBack(oxygenPos)
     maxG := 0
     for ; queue.Len() > 0; {
         parent := queue.Remove(queue.Front()).(point)
@@ -184,7 +194,7 @@ func main() {
                 continue
             }
             oxygen[child] = oxygen[parent] + 1
-            queue.PushFront(child)
+            queue.PushBack(child)
         }
     }
     fmt.Println("part 2:", maxG)

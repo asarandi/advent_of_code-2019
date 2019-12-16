@@ -32,34 +32,26 @@ def clear_extras():
     for k in extras.keys():
         extras[k] = 0
 
-def bfs(quantity, name, res=0):
-    clear_extras()
-    queue = []
-    queue.append(tuple([quantity, name]))
-    while queue:
-        quantity, name = queue.pop(0)
-        if name not in products:
-            res += quantity
-            continue
-        quantity -= extras[name]
-        if quantity <= 0:
-            extras[name] = abs(quantity)
-            continue
-        k = math.ceil(quantity / produced_quantities[name])
-        extras[name] = k * produced_quantities[name] - quantity
-        for child_n, child_q in products[name].items():
-            queue.append(tuple([k * child_q, child_n]))
+def dfs(quantity, name, res=0):
+    global extras, products, produced_quantities
+    if name not in products:
+        return quantity
+    quantity -= extras[name]
+    k = 0 if quantity <= 0 else math.ceil(quantity / produced_quantities[name])
+    extras[name] = abs(quantity) if quantity <= 0 else k * produced_quantities[name] - quantity
+    for child_n, child_q in products[name].items():
+        res += dfs(child_q * k, child_n)
     return res
 
-
-cost = bfs(1, 'FUEL')
+cost = dfs(1, 'FUEL')
 goal = 1000000000000
 lower = 1
 upper = 1<<32
-middle = -1
+mid = -1
 while lower <= upper:
     mid = lower + upper >> 1
-    ore = bfs(mid, 'FUEL')
+    clear_extras()
+    ore = dfs(mid, 'FUEL')
     if ore + cost < goal:
         lower = mid + 1
     elif ore > goal:

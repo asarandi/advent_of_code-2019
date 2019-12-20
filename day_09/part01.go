@@ -48,7 +48,7 @@ func getParams(array []int64, index, base int64) (int64, int64, int64, int64) {
 func exec(array, input []int64) []int64 {
     var index, size, i, j, k, base int64
     done := false
-    output := make([]int64,0)
+    output := make([]int64, 0)
     for index = 0; !done; {
         size, i, j, k = getParams(array, index, base)
         switch array[index] % 100 {
@@ -62,13 +62,25 @@ func exec(array, input []int64) []int64 {
         case 4:
             output = append(output, array[i])
         case 5:
-            if array[i] != 0 { index = array[j] - size }
+            if array[i] != 0 {
+                index = array[j] - size
+            }
         case 6:
-            if array[i] == 0 { index = array[j] - size }
+            if array[i] == 0 {
+                index = array[j] - size
+            }
         case 7:
-            if array[i] < array[j] { array[k] = 1 } else { array[k] = 0 }
+            if array[i] < array[j] {
+                array[k] = 1
+            } else {
+                array[k] = 0
+            }
         case 8:
-            if array[i] == array[j] { array[k] = 1 } else { array[k] = 0 }
+            if array[i] == array[j] {
+                array[k] = 1
+            } else {
+                array[k] = 0
+            }
         case 9:
             base += array[i]
         case 99:
@@ -86,7 +98,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
     array := make([]int64, len(split)*16)
     for idx, v := range split {

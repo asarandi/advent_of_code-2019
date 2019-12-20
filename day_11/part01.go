@@ -100,7 +100,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
     array := make([]int64, len(split)*16)
     for idx, v := range split {

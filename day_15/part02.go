@@ -1,4 +1,4 @@
-/* advent of code 2019: day 15, part 02 */
+/* advent of code 2019: day 15, part 1 and 2 */
 package main
 
 import (

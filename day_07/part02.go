@@ -37,7 +37,7 @@ func getParams(array []int, index int) (int, int, int, int) {
 }
 
 var programs [][]int
-var programs_copy [][]int
+var programsCopy [][]int
 var inputs [][]int
 var pcs []int
 
@@ -121,24 +121,24 @@ func prepare() {
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
 
     programs = make([][]int, 5)
-    programs_copy = make([][]int, 5)
+    programsCopy = make([][]int, 5)
     inputs = make([][]int, 5)
     pcs = make([]int, 5)
 
     for k := 0; k < 5; k++ {
         programs[k] = make([]int, len(split))
-        programs_copy[k] = make([]int, len(split))
+        programsCopy[k] = make([]int, len(split))
         for idx, v := range split {
             i, err := strconv.Atoi(v)
             if err != nil {
                 log.Fatal(err)
             }
             programs[k][idx] = i
-            programs_copy[k][idx] = i
+            programsCopy[k][idx] = i
         }
     }
 }
@@ -156,7 +156,7 @@ func main() {
         }
 
         for i := 0; i < 5; i++ {
-            copy(programs[i], programs_copy[i])
+            copy(programs[i], programsCopy[i])
             inputs[i] = make([]int, 0)
             inputs[i] = append(inputs[i], phases[i])
             pcs[i] = 0

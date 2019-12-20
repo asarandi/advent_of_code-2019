@@ -100,7 +100,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
     array := make([]int64, len(split)*16)
     for idx, v := range split {
@@ -120,16 +120,16 @@ func main() {
 
     for ; !finished; {
         select {
-        case <-out:			//y
-            <-out			//x
-			if 2 == <-out { //tile
-				res++
-			}
+        case <-out: //y
+            <-out           //x
+            if 2 == <-out { //tile
+                res++
+            }
         default:
             break
         }
     }
-	close(in)
+    close(in)
     close(out)
-	fmt.Println("part 1:", res)
+    fmt.Println("part 1:", res)
 }

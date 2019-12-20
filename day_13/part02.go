@@ -7,9 +7,7 @@ import (
     "log"
     "strconv"
     "strings"
-	"os"
-	"bufio"
-	"time"
+    "time"
 )
 
 func getParams(array []int64, index, base int64) (int64, int64, int64, int64) {
@@ -50,8 +48,8 @@ func getParams(array []int64, index, base int64) (int64, int64, int64, int64) {
 
 var finished = false
 var want = false
-var paddle_y = 0
-var ball_y = 0
+var paddleY = 0
+var ballY = 0
 
 func exec(array []int64, in, out chan int64) {
     var index, size, i, j, k, base int64
@@ -63,7 +61,7 @@ func exec(array []int64, in, out chan int64) {
         case 2:
             array[k] = array[i] * array[j]
         case 3:
-			want = true
+            want = true
             array[i] = <-in
         case 4:
             out <- array[i]
@@ -102,18 +100,12 @@ type point struct {
     y, x int
 }
 
-func getchar() byte {
-    reader := bufio.NewReader(os.Stdin)
-    input, _ := reader.ReadString('\n')
-    return input[0]
-}
-
 func main() {
     content, err := ioutil.ReadFile("input.txt")
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
     array := make([]int64, len(split)*16)
     for idx, v := range split {
@@ -124,7 +116,7 @@ func main() {
         array[idx] = i
     }
 
-	rows, columns := 22 + 1, 43 + 1
+    rows, columns := 22+1, 43+1
     result := make([][]byte, rows)
     for i := 0; i < rows; i++ {
         result[i] = make([]byte, columns)
@@ -135,57 +127,62 @@ func main() {
 
     i, j := 0, 0
     finished = false
-	array[0] = 2
-	score := 0
+    array[0] = 2
+    score := 0
     in := make(chan int64)
     out := make(chan int64)
     go exec(array, in, out)
     for ; !finished; {
 
-		fmt.Printf("\033c")	// clear screen
-		for k:=0; k<rows; k++ {
-			fmt.Println(string(result[k]))
-		}
-		fmt.Println("score", score)
-		time.Sleep(1 * time.Millisecond)
+        fmt.Printf("\033c") // clear screen
+        for k := 0; k < rows; k++ {
+            fmt.Println(string(result[k]))
+        }
+        fmt.Println("score", score)
+        time.Sleep(1 * time.Millisecond)
 
-		if want {
-			want = false
-			if paddle_y > ball_y {
-				in <- -1
-			}
-			if paddle_y < ball_y {
-				in <- 1
-			}
-			if paddle_y == ball_y {
-				in <- 0
-			}
-		}
+        if want {
+            want = false
+            if paddleY > ballY {
+                in <- -1
+            }
+            if paddleY < ballY {
+                in <- 1
+            }
+            if paddleY == ballY {
+                in <- 0
+            }
+        }
 
         select {
         case y := <-out:
             x := <-out
-			tile := <-out
-			if y == -1 && x == 0 {
-				score = int(tile)
-				break
-			}
-			i = int(x)
-			j = int(y)
-			var c byte
-			switch tile {
-				case 0: c = ' '
-				case 1: c = '#'
-				case 2: c = 'x'
-				case 3: c = '-'
-						paddle_y = int(y)
-				case 4: c = 'o'
-						ball_y = int(y)
-			default:
-				fmt.Println("error")
-				break
-			}
-			result[i][j] = c
+            tile := <-out
+            if y == -1 && x == 0 {
+                score = int(tile)
+                break
+            }
+            i = int(x)
+            j = int(y)
+            var c byte
+            switch tile {
+            case 0:
+                c = ' '
+            case 1:
+                c = '#'
+            case 2:
+                c = 'x'
+            case 3:
+                c = '-'
+                paddleY = int(y)
+            case 4:
+                c = 'o'
+                ballY = int(y)
+            default:
+                fmt.Println("error")
+                break
+            }
+            result[i][j] = c
 
         default:
             break

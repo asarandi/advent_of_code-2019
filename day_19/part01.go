@@ -29,32 +29,32 @@ func main() {
         }
         ic.program[idx] = i
     }
-	ic.program_copy = make([]int64, len(ic.program))
-	copy(ic.program_copy, ic.program)
+    ic.program_copy = make([]int64, len(ic.program))
+    copy(ic.program_copy, ic.program)
 
-	res, i, input, size := 0, 0, 0, 50
-	haveY := true
+    res, i, input, size := 0, 0, 0, 50
+    haveY := true
     for ; ic.state != finished; {
         ic.run()
-		if ic.state == wantInput {
-			if haveY {
-				input = i / size
-				haveY = false
-			} else {
-				input = i % size
-				haveY = true
-			}
-			ic.program[ic.i] = int64(input)
-		}
-        if ic.state == haveOutput {
-			i++
-			if ic.program[ic.i] == 1 {
-				res++
-			}
+        if ic.state == wantInput {
+            if haveY {
+                input = i / size
+                haveY = false
+            } else {
+                input = i % size
+                haveY = true
+            }
+            ic.program[ic.i] = int64(input)
         }
-		if ic.state == finished && i < size*size {
-			ic.reset()
-		}
+        if ic.state == haveOutput {
+            i++
+            if ic.program[ic.i] == 1 {
+                res++
+            }
+        }
+        if ic.state == finished && i < size*size {
+            ic.reset()
+        }
     }
-	fmt.Println("part 1:", res)
+    fmt.Println("part 1:", res)
 }

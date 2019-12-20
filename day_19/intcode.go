@@ -8,13 +8,13 @@ const (
 )
 
 type intCode struct {
-    program []int64
+    program      []int64
     program_copy []int64
-    state   int64
-    pc      int64
-    nextPc  int64
-    base    int64
-    i, j, k int64
+    state        int64
+    pc           int64
+    nextPc       int64
+    base         int64
+    i, j, k      int64
 }
 
 func (ic *intCode) currentOp() int64 {
@@ -29,7 +29,7 @@ func (ic *intCode) reset() {
     ic.i = 0
     ic.j = 0
     ic.k = 0
-	copy(ic.program, ic.program_copy)
+    copy(ic.program, ic.program_copy)
 }
 
 func (ic *intCode) instructionLength() int64 {

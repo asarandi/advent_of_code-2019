@@ -3,10 +3,10 @@ package main
 
 import "fmt"
 
-func is_valid(x int) bool {
+func isValid(x int) bool {
     res := false
     prev := 10
-    for ; x > 0; x/=10 {
+    for ; x > 0; x /= 10 {
         z := x % 10
         if prev < z {
             return false
@@ -20,7 +20,7 @@ func is_valid(x int) bool {
 func main() {
     res := 0
     for i := 235741; i < 706948; i++ {
-        if is_valid(i) {
+        if isValid(i) {
             res++
         }
     }

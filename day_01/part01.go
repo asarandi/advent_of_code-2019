@@ -19,13 +19,13 @@ func main() {
     sum := 0
     for _, v := range split {
         if len(v) < 1 {
-            continue ;
+            continue
         }
         i, err := strconv.Atoi(v)
         if err != nil {
             log.Fatal(err)
         }
-        sum += i / 3 - 2
+        sum += i/3 - 2
     }
     fmt.Println(sum)
 }

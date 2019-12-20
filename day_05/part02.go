@@ -1,4 +1,4 @@
-/* advent of code 2019: day 05, part 02 */
+/* advent of code 2019: day 05, part 1 and part 2 */
 package main
 
 import (
@@ -9,7 +9,7 @@ import (
     "strings"
 )
 
-func get_params(array []int, index int) (int, int, int, int) {
+func getParams(array []int, index int) (int, int, int, int) {
     var size, i, j, k int
     instructionLengths := map[int]int{
         1: 4, 2: 4, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4, 99: 1}
@@ -38,7 +38,7 @@ func get_params(array []int, index int) (int, int, int, int) {
 func exec(array []int, input int) {
     done := false
     for index := 0; !done; {
-        size, i, j, k := get_params(array, index)
+        size, i, j, k := getParams(array, index)
         switch array[index] % 100 {
         case 1:
             array[k] = array[i] + array[j]
@@ -82,7 +82,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    s := strings.Trim(string(content), " \t\n\r\v\f");
+    s := strings.Trim(string(content), " \t\n\r\v\f")
     split := strings.Split(s, ",")
     array := make([]int, len(split))
     for idx, v := range split {

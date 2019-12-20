@@ -1,4 +1,4 @@
-/* advent of code 2019: day 10, part 02 */
+/* advent of code 2019: day 10, part 1 and 2 */
 package main
 
 import (
@@ -44,6 +44,7 @@ func (a asteroid) inQ1() bool {
 }
 
 type ByAnglesDistance []asteroid
+
 func (a ByAnglesDistance) Len() int      { return len(a) }
 func (a ByAnglesDistance) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a ByAnglesDistance) Less(i, j int) bool {
@@ -83,7 +84,7 @@ func main() {
     s := strings.Trim(string(content), " \t\r\n\v\f")
     split := strings.Split(s, "\n")
     asteroids = make([]asteroid, 0)
-    for x, _ := range split {
+    for x := range split {
         for y, val := range split[x] {
             if val == '#' {
                 asteroids = append(asteroids, asteroid{x, y, 0, 0, 0})
@@ -91,18 +92,18 @@ func main() {
         }
     }
     base := asteroids[0]
-    base_num_angles := 0
+    baseNumAngles := 0
     for _, a := range asteroids {
         angles := make(map[float64]bool)
         for _, b := range asteroids {
             angles[a.angle(b)] = true
         }
-        if len(angles) > base_num_angles {
+        if len(angles) > baseNumAngles {
             base = a
-            base_num_angles = len(angles)
+            baseNumAngles = len(angles)
         }
     }
-    fmt.Println("part 1:", base_num_angles)
+    fmt.Println("part 1:", baseNumAngles)
     for i := range asteroids {
         asteroids[i].d = base.distance(asteroids[i])
         asteroids[i].a = base.angle(asteroids[i])

@@ -1,3 +1,4 @@
+/* advent of code 2019: day 18, part 01 */
 package main
 
 import (

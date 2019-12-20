@@ -1,6 +1,5 @@
-package main
-
 /* advent of code 2019: day 14, part 1 & part 2 */
+package main
 
 import (
     "fmt"

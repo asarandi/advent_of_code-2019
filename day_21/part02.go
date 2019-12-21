@@ -1,4 +1,4 @@
-/* advent of code 2019: day 21, part 01 */
+/* advent of code 2019: day 21, part 02 */
 package main
 
 import (
@@ -9,19 +9,15 @@ import (
     "strings"
 )
 
-//const solution = "NOT A J\nNOT B T\nAND T J\nNOT C T\nAND T J\nAND D J\nWALK\n"
-//const solution = "NOT A J\nNOT C T\nWALK\n"
+//  .................
+//  .................
+//  @................
+//  #####.#.#...#####
+//    @abcdefg
 
-//const solution = "WALK\n"               // case 1, result: .....0.....   try NOT A J
-//const solution = "NOT A J\nWALK\n"      // case 2, result: .....0100..
-//const solution = "NOT A J\nNOT B T\nOR T J\nWALK\n"
-const solution = "NOT C T\nOR T J\nNOT A T\nOR T J\nAND D J\nWALK\n"      // case 2, result: .....0100..   NOT A J,    if not A && not C && not D && B
 
-//.....0100..
-//.....010...
-//.....000...     // OR A T, OR B T, OR C T, NOT T J,
-//.....0.....     // NOT A J
 
+const solution = "NOT C T\nOR T J\nNOT A T\nOR T J\nAND D J\nRUN\n"
 
 func main() {
     content, err := ioutil.ReadFile("input.txt")

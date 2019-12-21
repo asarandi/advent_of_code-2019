@@ -1,160 +1,167 @@
-/* advent of code 2019: day 18, part 02 */
+/* advent of code 2019: day 18, part 02: does not work properly */
 package main
 
 import (
-    "container/heap"
+    "container/list"
     "fmt"
     "io/ioutil"
     "strings"
 )
 
+var center point
+var robots [4]robot
+var grid map[point]byte
+
 type point struct {
     y, x int
 }
 
-var allKeys [26]bool
-var numKeys int
-var area map[point]byte
-
-type state struct {
-    pos  [4]point
-    keys [26]bool
+type robot struct {
+    pos           point
+    lockedDoors   [26]bool
+    neededKeys    [26]bool
+    collectedKeys [26]bool
+    distance      int
 }
 
-type Item struct {
-    node     *state
-    parent   *state
-    distance int
-    priority int
-    index    int
-}
-
-type PriorityQueue []*Item
-
-func (pq PriorityQueue) Len() int { return len(pq) }
-
-func (pq PriorityQueue) Less(i, j int) bool {
-    return pq[i].priority < pq[j].priority
-}
-
-func (pq PriorityQueue) Swap(i, j int) {
-    pq[i], pq[j] = pq[j], pq[i]
-    pq[i].index = i
-    pq[j].index = j
-}
-
-func (pq *PriorityQueue) Push(x interface{}) {
-    item := x.(*Item)
-    item.index = len(*pq)
-    *pq = append(*pq, item)
-}
-
-func (pq *PriorityQueue) Pop() interface{} {
-    item := (*pq)[len(*pq)-1]
-    *pq = (*pq)[0 : len(*pq)-1]
-    return item
-}
-
-func (s state) heuristic() int {
-    count := 0
-    for i := 0; i < len(s.keys); i++ {
-        if s.keys[i] {
-            count++
-        }
-    }
-    return numKeys - count
-}
-
-func (s state) children() []state {
-    res := make([]state, 0)
-    moves := []point{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
-    for r := 0; r < 4; r++ {
-        for i := 0; i < 4; i++ {
-            childPos := point{s.pos[r].y + moves[i].y, s.pos[r].x + moves[i].x}
-            c, ok := area[childPos]
-            if !ok {
-                continue
-            }
-            if c == '#' {
-                continue
-            }
-            if c >= 'A' && c <= 'Z' {
-                if !s.keys[int(c-'A')] {
-                    continue
-                }
-            }
-            child := s
-            child.pos[r] = childPos
-            if c >= 'a' && c <= 'z' {
-                child.keys[int(c-'a')] = true
-            }
-            res = append(res, child)
-        }
-    }
-    return res
-}
-
-func (s state) isGoal() bool {
-    res := true
+func (r robot) isGoal() bool {
     for i := 0; i < 26; i++ {
-        res = res && s.keys[i] == allKeys[i]
+        if r.neededKeys[i] != r.collectedKeys[i] {
+            return false
+        }
+    }
+    return true
+}
+
+func (r robot) children() []robot {
+    res := make([]robot, 0)
+    moves := []point{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+    for i := 0; i < 4; i++ {
+        childPos := r.pos.add(moves[i])
+        c, ok := grid[childPos]
+        if !ok {
+            continue
+        }
+        if c == '#' {
+            continue
+        }
+        if c >= 'A' && c <= 'Z' {
+            if r.lockedDoors[int(c-'A')] && !r.collectedKeys[int(c-'A')] {
+                continue
+            }
+        }
+        child := r
+        child.pos = childPos
+        if c >= 'a' && c <= 'z' {
+//          fmt.Println("robot", child.n, "collects key", string(c))
+            child.collectedKeys[int(c-'a')] = true
+        }
+        res = append(res, child)
     }
     return res
 }
 
-func main() {
-    content, err := ioutil.ReadFile("sample_24.txt")
+func (p point) add(q point) point {
+    return point{p.y + q.y, p.x + q.x}
+}
+
+/* return values 0..3 */
+func (p point) getQuadrant() int {
+    res := 0
+    if p.y > center.y {
+        res += 2
+    }
+    if p.x > center.x {
+        res += 1
+    }
+    return res
+}
+
+func prepare(f string) {
+    content, err := ioutil.ReadFile(f)
     if err != nil {
         panic(err)
     }
     split := strings.Split(strings.Trim(string(content), " \n\t\r\f\v"), "\n")
-    area = make(map[point]byte)
-    r := 0
-    start := state{}
-    for i := 0; i < len(split); i++ {
-        for j := 0; j < len(split[0]); j++ {
-            c := split[i][j]
+    center = point{(len(split) - 1) / 2, (len(split[0]) - 1) / 2}
+    grid = make(map[point]byte)
+    for i := range split {
+        for j := range split[i] {
             p := point{i, j}
-            area[p] = c
+            q := p.getQuadrant()
+            c := split[i][j]
+            grid[p] = c
             if c >= 'a' && c <= 'z' {
-                allKeys[int(c-'a')] = true
-                numKeys++
-            }
-            if c == '@' {
-                start.pos[r] = p
-                r++
+                robots[q].neededKeys[int(c-'a')] = true
             }
         }
     }
-    closed := make(map[state]bool)
-    distances := make(map[state]int)
-    distances[start] = 0
-    pq := make(PriorityQueue, 0)
-    item := Item{&start, nil, 0, start.heuristic(), 0}
-    heap.Push(&pq, &item)
-    for ; pq.Len() > 0; {
-        item := heap.Pop(&pq).(*Item)
-        node := *item.node
-        //fmt.Println(node, "heuristic", node.heuristic(), "dist", distances[node])
-        if node.isGoal() {
-            fmt.Println("part 2:", distances[node])
-            break
+    grid[center] = '#'
+    grid[point{center.y - 1, center.x}] = '#'
+    grid[point{center.y + 1, center.x}] = '#'
+    grid[point{center.y, center.x - 1}] = '#'
+    grid[point{center.y, center.x + 1}] = '#'
+    grid[point{center.y - 1, center.x - 1}] = '@'
+    grid[point{center.y - 1, center.x + 1}] = '@'
+    grid[point{center.y + 1, center.x + 1}] = '@'
+    grid[point{center.y + 1, center.x - 1}] = '@'
+    for k, v := range grid {
+        q := k.getQuadrant()
+        if v >= 'A' && v <= 'Z' && robots[q].neededKeys[int(v-'A')] {
+            robots[q].lockedDoors[int(v-'A')] = true
         }
-        if _, ok := closed[node]; ok {
-            continue
-        }
-        closed[node] = true
-        for _, child := range node.children() {
-            if _, ok := closed[child]; ok {
-                //fmt.Println("closed", child)
-                continue
-            }
-            distances[child] = distances[node] + 1
-            f := distances[child] + child.heuristic()
-            chi := Item{&child, &node, distances[child], f, 0}
-            pq.Push(&chi)
-            fmt.Println("parent", node)
-            fmt.Println(" child", child)
+        if v == '@' {
+            robots[q].pos = k
         }
     }
+}
+
+//func printGrid() {
+//    for i:=0; i<center.y*2+1; i++ {
+//        for j:=0; j<center.x*2+1; j++ {
+//            fmt.Printf(string(grid[point{i,j}]))
+//        }
+//        fmt.Println()
+//    }
+//}
+
+func main() {
+    prepare("input.txt")
+//    printGrid()
+    for i := 0; i < len(robots); i++ {
+        distances := make(map[robot]int)
+        distances[robots[i]] = 0
+        queue := list.New()
+        queue.PushBack(robots[i])
+//        flag := false
+        for ; queue.Len() > 0; {
+            node := queue.Remove(queue.Front()).(robot)
+            if node.isGoal() {
+//                flag = true
+                robots[i] = node
+                robots[i].distance = distances[node]
+                break
+            }
+            for _, child := range node.children() {
+                if _, ok := distances[child]; ok {
+                    continue
+                }
+                distances[child] = distances[node] + 1
+                queue.PushBack(child)
+            }
+        }
+        //fmt.Println("success?", flag)
+        //
+        //fmt.Println("        robot", i)
+        //fmt.Println("   neededKeys", robots[i].neededKeys)
+        //fmt.Println("collectedKeys", robots[i].collectedKeys)
+        //fmt.Println("  lockedDoors", robots[i].lockedDoors)
+        //fmt.Println("     distance", robots[i].distance)
+
+    }
+    res := 0
+    for i := 0; i < len(robots); i++ {
+        res += robots[i].distance
+    }
+    fmt.Println("part 2:", res)
 }

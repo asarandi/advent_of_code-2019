@@ -19,7 +19,7 @@ type point struct {
     y, x int
 }
 
-func isupper(b byte) bool {
+func isUpper(b byte) bool {
     return b >= 'A' && b <= 'Z'
 }
 
@@ -46,24 +46,24 @@ func parse(f string) {
         }
     }
     for k, v := range grid {
-        if !isupper(v) {
+        if !isUpper(v) {
             continue
         }
         p, name := point{0, 0}, ""
         u, r, d, l := grid[k.up()], grid[k.right()], grid[k.down()], grid[k.left()]
-        if isupper(u) && d == '.' {
+        if isUpper(u) && d == '.' {
             p = k.down()
             name = string(u) + string(v)
         }
-        if isupper(d) && u == '.' {
+        if isUpper(d) && u == '.' {
             p = k.up()
             name = string(v) + string(d)
         }
-        if isupper(l) && r == '.' {
+        if isUpper(l) && r == '.' {
             p = k.right()
             name = string(l) + string(v)
         }
-        if isupper(r) && l == '.' {
+        if isUpper(r) && l == '.' {
             p = k.left()
             name = string(v) + string(r)
         }
@@ -92,33 +92,34 @@ func parse(f string) {
     }
 }
 
-type state struct {
-    pos point
-    d   int
+type node struct {
+    pos  point
+    dist int
 }
 
 func main() {
     parse("input.txt")
     queue := list.New()
-    queue.PushBack(state{start, 0})
-    seen := make(map[state]bool)
+    queue.PushBack(node{start, 0})
+    seen := make(map[point]bool)
     for ; queue.Len() > 0; {
-        node := queue.Remove(queue.Front()).(state)
-        if _, ok := seen[node]; ok {
+        n := queue.Remove(queue.Front()).(node)
+        pos, dist := n.pos, n.dist
+        if _, ok := seen[pos]; ok {
             continue
         }
-        seen[node] = true
-        if node.pos == finish {
-            fmt.Println("part 1:", node.d)
+        seen[pos] = true
+        if pos == finish {
+            fmt.Println("part 1:", dist)
             break
         }
-        if portal, ok := pairs[node.pos]; ok {
-            queue.PushBack(state{portal, node.d + 1})
+        if portal, ok := pairs[pos]; ok {
+            queue.PushBack(node{portal, dist + 1})
         }
-        moves := []point{node.pos.up(), node.pos.down(), node.pos.left(), node.pos.right()}
+        moves := []point{pos.up(), pos.down(), pos.left(), pos.right()}
         for _, move := range moves {
             if grid[move] == '.' {
-                queue.PushBack(state{move, node.d + 1})
+                queue.PushBack(node{move, dist + 1})
             }
         }
     }

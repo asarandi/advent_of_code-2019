@@ -130,8 +130,7 @@ func main() {
                 }
             }
         }
-        moves := []point{pos.up(), pos.down(), pos.left(), pos.right()}
-        for _, move := range moves {
+        for _, move := range []point{pos.up(), pos.down(), pos.left(), pos.right()} {
             if grid[move] == '.' {
                 queue.PushBack(node{move, level, dist + 1})
             }

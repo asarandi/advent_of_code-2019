@@ -1,4 +1,4 @@
-/* advent of code 2019: day 23, part 02 */
+/* advent of code 2019: day 23, part 1 and 2 */
 package main
 
 import (
@@ -8,6 +8,21 @@ import (
     "strconv"
     "strings"
 )
+
+const numMachines = 50
+const NAT = 255
+
+var machines [numMachines]intCode
+var inputs [numMachines][]int64
+
+func (ic *intCode) getPackets() (int64, int64, int64) {
+    addr := ic.getOutput()
+    ic.run()
+    packetX := ic.getOutput()
+    ic.run()
+    packetY := ic.getOutput()
+    return addr, packetX, packetY
+}
 
 func main() {
     content, err := ioutil.ReadFile("input.txt")
@@ -24,80 +39,45 @@ func main() {
         }
         program[idx] = i
     }
-    var machines []intCode
-    var inputs [50][]int64
-    for i := 0; i < 50; i++ {
-        ic := intCode{}
-        ic.program, ic.program_copy = make([]int64, len(program)), make([]int64, len(program))
-        copy(ic.program, program)
-        copy(ic.program_copy, program)
-        machines = append(machines, ic)
-        machines[i].run()                             //init
-        machines[i].program[machines[i].i] = int64(i) //set machine numbers
-        machines[i].run()                             //continue
-        inputs[i] = make([]int64, 0)
+    for i := 0; i < numMachines; i++ {
+        machines[i] = intCode{make([]int64, len(program)), nil, 0, 0, 0, 0, 0, 0, 0}
+        copy(machines[i].program, program)
+        inputs[i] = make([]int64, 1)
+        inputs[i][0] = int64(i)
     }
-    done := false
-    var natX, natY int64
-    seenY := make(map[int64]bool)
-    for ; !done; {
-        done = true
-        idles := 0
-        for i := 0; i < 50; i++ {
-            done = done && machines[i].state == finished
-            if machines[i].state == finished {
-                continue
-            }
+    natSeenPackets, natPacketX, natPacketY, partOne := make(map[int64]bool), int64(0), int64(0), false
+    for {
+        numIdleMachines := 0
+        for i := 0; i < numMachines; i++ {
             if machines[i].state == haveOutput {
-                address := machines[i].getOutput()
-                machines[i].run()
-                if machines[i].state != haveOutput {
-                    fmt.Println("error: expecting 'haveOutput' state for byte X")
-                }
-                byteX := machines[i].getOutput()
-                machines[i].run()
-                if machines[i].state != haveOutput {
-                    fmt.Println("error: expecting 'haveOutput' state for byte Y")
-                }
-                byteY := machines[i].getOutput()
-                if address >= int64(len(machines)) {
-                    if address == 255 {
-                        natX = byteX
-                        natY = byteY
-                    } else {
-                        fmt.Println("out of bounds", address, byteX, byteY)
+                addr, packetX, packetY := machines[i].getPackets()
+                if addr == NAT {
+                    natPacketX, natPacketY = packetX, packetY
+                    if !partOne {
+                        partOne = true
+                        fmt.Println("part 1:", natPacketY)
                     }
                 } else {
-                    inputs[int(address)] = append(inputs[int(address)], byteX)
-                    inputs[int(address)] = append(inputs[int(address)], byteY)
+                    inputs[addr] = append(inputs[addr], packetX, packetY)
                 }
             } else if machines[i].state == wantInput {
-                if len(inputs[i]) == 0 {
-                    machines[i].setInput(-1)
-                    idles++
-                } else if len(inputs[i]) >= 2 {
+                if len(inputs[i]) > 0 {
                     machines[i].setInput(inputs[i][0])
-                    machines[i].run()
-                    if machines[i].state != wantInput {
-                        fmt.Println("error: expecting 'wantInput' state for byte Y")
-                    }
-                    machines[i].setInput(inputs[i][1])
-                    inputs[i] = inputs[i][2:]
+                    inputs[i] = inputs[i][1:]
+                } else {
+                    machines[i].setInput(-1)
+                    numIdleMachines++
                 }
             }
-            if machines[i].state != finished {
-                machines[i].run()
-            }
+            machines[i].run()
         }
-        if idles == len(machines) {
-            if _, ok := seenY[natY]; ok {
-                fmt.Println("part 2:", natY)
-                done = true
+        if numIdleMachines == numMachines {
+            if _, ok := natSeenPackets[natPacketY]; ok {
+                fmt.Println("part 2:", natPacketY)
                 break
             }
-            seenY[natY] = true
-            inputs[0] = append(inputs[0], natX)
-            inputs[0] = append(inputs[0], natY)
+            natSeenPackets[natPacketY] = true
+            inputs[0] = append(inputs[0], natPacketX, natPacketY)
         }
     }
 }

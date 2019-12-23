@@ -7,11 +7,10 @@ with open("input.txt") as fp:
     fp.close()
 
 def inc(d, k):
-    res, i, j = [0] * len(d), 0, 0
-    while j < len(d):
+    res, i = [0] * len(d), 0
+    for j in range(len(d)):
         res[i] = d[j]
         i = (i + k) % len(d)
-        j += 1
     return res
 
 deck = [i for i in range(10007)]
@@ -26,4 +25,4 @@ for line in data:
         else:
             deck.reverse()
  
-print(deck.index(2019))
+print("part 1:", deck.index(2019))

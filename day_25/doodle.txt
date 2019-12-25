@@ -1,0 +1,193 @@
+== Arcade ==
+== Corridor ==
+== Crew Quarters ==
+== Engineering ==
+== Hull Breach ==
+== Navigation ==
+== Passages ==
+== Stables ==
+
+
+
+
+
+
+                                SB      v                                                                       HB      v
+
+                                WDM ^   v                SecCP > <   STOR > <        OBS > v <    HW   > v <    ENG ^   v  <
+
+                                SL ^  >                                              Holo ^       GWC  ^        ARC ^   v  <
+
+                                KIT   >                                                                         CQ  ^   v  <
+
+                COR  > v        NAV   >   <                                                                     PAS ^ >    <       HCF
+
+                STA  ^
+
+
+
+
+
+== Hull Breach ==
+You got in through a hole in the floor here. To keep your ship from also freezing, the hole has been sealed.
+
+Doors here lead:
+- south
+
+Command?
+-----------------------> intCode input: south
+
+
+
+== Engineering ==
+You see a whiteboard with plans for Springdroid v2.
+
+Doors here lead:
+- north
+- south
+- west
+
+Items here:
+- infinite loop
+
+Command?
+-----------------------> intCode input: south
+
+
+
+== Arcade ==
+None of the cabinets seem to have power.
+
+Doors here lead:
+- north
+- south
+- west
+
+Items here:
+- photons
+
+Command?
+-----------------------> intCode input: south
+
+
+
+== Crew Quarters ==
+The beds are all too small for you.
+
+Doors here lead:
+- north
+- south
+- west
+
+Items here:
+- fixed point
+
+Command?
+-----------------------> intCode input: take fixed point
+
+You take the fixed point.
+
+Command?
+-----------------------> intCode input: south
+
+
+
+== Passages ==
+They're a little twisty and starting to look all alike.
+
+Doors here lead:
+- north
+- east
+- west
+
+Items here:
+- festive hat
+
+Command?
+-----------------------> intCode input: take festive hat
+
+You take the festive hat.
+
+Command?
+-----------------------> intCode input: west
+
+
+
+== Navigation ==
+Status: Stranded. Please supply measurements from fifty stars to recalibrate.
+
+Doors here lead:
+- east
+- west
+
+Command?
+-----------------------> intCode input: west
+
+
+
+== Corridor ==
+The metal walls and the metal floor are slightly different colors. Or are they?
+
+Doors here lead:
+- east
+- south
+
+Items here:
+- jam
+
+Command?
+-----------------------> intCode input: take jam
+
+You take the jam.
+
+Command?
+-----------------------> intCode input: south
+
+
+
+== Stables ==
+Reindeer-sized. They're all empty.
+
+Doors here lead:
+- north
+
+Items here:
+- easter egg
+
+Command?
+-----------------------> intCode input: take easter egg
+
+You take the easter egg.
+
+Command?
+-----------------------> intCode input: north
+
+
+
+== Corridor ==
+The metal walls and the metal floor are slightly different colors. Or are they?
+
+Doors here lead:
+- east
+- south
+
+Command?
+-----------------------> intCode input: take jam
+
+You don't see that item here.
+
+Command?
+-----------------------> intCode input: east
+
+
+
+== Navigation ==
+Status: Stranded. Please supply measurements from fifty stars to recalibrate.
+
+Doors here lead:
+- east
+- west
+
+Command?
+-----------------------> intCode input: banana
+done
